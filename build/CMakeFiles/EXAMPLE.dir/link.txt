@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/EXAMPLE.dir/src/blob_detector.cpp.o  -o EXAMPLE  ../Dependencies/SDL2-2.0.22/lib/x64/SDL2.lib ../Dependencies/SDL2-2.0.22/lib/x64/SDL2main.lib ../Dependencies/SDL2-2.0.22/lib/x64/SDL2test.lib ../Dependencies/SDL2_image-2.0.5/lib/x64/SDL2_image.lib 
