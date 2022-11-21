@@ -1,6 +1,5 @@
 file(REMOVE_RECURSE
   "CMakeFiles/blob_det.dir/src/main.cpp.o"
-  "CMakeFiles/blob_det.dir/src/main.cpp.o.d"
   "blob_det"
   "blob_det.pdb"
 )

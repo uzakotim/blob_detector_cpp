@@ -1,3 +1,3 @@
-/Users/uzakotim/Git/blob_detector_cpp/build/CMakeFiles/blob_det.dir
-/Users/uzakotim/Git/blob_detector_cpp/build/CMakeFiles/edit_cache.dir
-/Users/uzakotim/Git/blob_detector_cpp/build/CMakeFiles/rebuild_cache.dir
+/home/timur/Git/blob_detector_cpp/build/CMakeFiles/rebuild_cache.dir
+/home/timur/Git/blob_detector_cpp/build/CMakeFiles/edit_cache.dir
+/home/timur/Git/blob_detector_cpp/build/CMakeFiles/blob_det.dir
