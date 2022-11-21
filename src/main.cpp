@@ -28,7 +28,7 @@ private:
   bool _gui_ = true;
 
 
-  // ---------------------Color parameters----------------------------|
+   // ---------------------Color parameters----------------------------|
   const cv::Scalar                  color_red_one_min = cv::Scalar(0,100,75);        //RED
   const cv::Scalar                  color_red_one_max = cv::Scalar(5,255,255);     //RED
 
@@ -48,7 +48,7 @@ private:
   const cv::Scalar                  color_green_max = cv::Scalar(75,255,255);      //GREEN
   
   const cv::Scalar                  color_purple_min = cv::Scalar(150,100,75);      //PURPLE
-  const cv::Scalar                  color_purple_max = cv::Scalar(160,255,255);    //PURPLE
+  const cv::Scalar                  color_purple_max = cv::Scalar(175,255,255);    //PURPLE
   
   const cv::Scalar                  color_black_min = cv::Scalar(0,0,0);           //BLACK
   const cv::Scalar                  color_black_max = cv::Scalar(180,255,30);      //BLACK
@@ -61,7 +61,7 @@ private:
   const cv::Scalar                  detection_color_orange = cv::Scalar(13,143,255);
   const cv::Scalar                  detection_color_purple = cv::Scalar(255,0,255);
   
-  int blob_size = 50; 
+  int blob_size = 200;   
   
   // | --------- Blob Parameters -------------------------------- |
   cv::Point2d statePt2D;
