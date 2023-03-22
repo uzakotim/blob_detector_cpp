@@ -124,7 +124,7 @@ void Detector::GrabRGBD() {
   // 1) smoothing
   cv::Mat     blurred_image   = Detector::GaussianBlur(cv_image);
   // 2) conversion to hsv
-  cv::Mat     image_HSV       = Detector::BGRtoHSV(cv_image);
+  cv::Mat     image_HSV       = Detector::BGRtoHSV(blurred_image);
   // 3) finding mask
   cv::Mat     red_mask        = Detector::ReturnRedMask(image_HSV);
   cv::Mat     blue_mask       = Detector::ReturnBlueMask(image_HSV);
