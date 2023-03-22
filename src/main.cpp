@@ -35,8 +35,8 @@ private:
   const cv::Scalar                  color_red_two_min = cv::Scalar(175,100,75);      //RED
   const cv::Scalar                  color_red_two_max = cv::Scalar(180,255,255);    //RED
     
-  const cv::Scalar                  color_blue_min = cv::Scalar(88,100,75);        //BLUE
-  const cv::Scalar                  color_blue_max = cv::Scalar(130,255,255);       //BLUE
+  const cv::Scalar                  color_blue_min = cv::Scalar(75,100,75);        //BLUE
+  const cv::Scalar                  color_blue_max = cv::Scalar(150,255,255);       //BLUE
   
   const cv::Scalar                  color_orange_min = cv::Scalar(15,150,150);       //ORANGE
   const cv::Scalar                  color_orange_max = cv::Scalar(30,255,255);     //ORANGE
@@ -262,7 +262,6 @@ cv::Mat Detector::ReturnRedMask(cv::Mat image)
       cv::inRange     (image, color_red_one_min, color_red_one_max, mask1);
       cv::inRange     (image, color_red_two_min, color_red_two_max, mask2);
       total = mask1 | mask2;
-      
       return total;
 }
 cv::Mat Detector::ReturnBlueMask(cv::Mat image)
