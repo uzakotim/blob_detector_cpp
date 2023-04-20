@@ -1,0 +1,3 @@
+/home/timur/git/blob_detector_cpp/build/CMakeFiles/blob_det.dir
+/home/timur/git/blob_detector_cpp/build/CMakeFiles/edit_cache.dir
+/home/timur/git/blob_detector_cpp/build/CMakeFiles/rebuild_cache.dir

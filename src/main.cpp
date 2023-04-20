@@ -29,25 +29,25 @@ private:
 
 
    // ---------------------Color parameters----------------------------|
-  const cv::Scalar                  color_red_one_min = cv::Scalar(0,100,75);        //RED
-  const cv::Scalar                  color_red_one_max = cv::Scalar(5,255,255);     //RED
+  const cv::Scalar                  color_red_one_min = cv::Scalar(0,50,200);        //RED 177
+  const cv::Scalar                  color_red_one_max = cv::Scalar(10,255,255);     //RED
 
-  const cv::Scalar                  color_red_two_min = cv::Scalar(175,100,75);      //RED
+  const cv::Scalar                  color_red_two_min = cv::Scalar(150,50,200);     //RED
   const cv::Scalar                  color_red_two_max = cv::Scalar(180,255,255);    //RED
     
-  const cv::Scalar                  color_blue_min = cv::Scalar(75,100,75);        //BLUE
-  const cv::Scalar                  color_blue_max = cv::Scalar(150,255,255);       //BLUE
+  const cv::Scalar                  color_blue_min = cv::Scalar(75,75,177);         //BLUE
+  const cv::Scalar                  color_blue_max = cv::Scalar(130,255,255);       //BLUE
   
-  const cv::Scalar                  color_orange_min = cv::Scalar(15,150,150);       //ORANGE
-  const cv::Scalar                  color_orange_max = cv::Scalar(30,255,255);     //ORANGE
+  const cv::Scalar                  color_orange_min = cv::Scalar(15,75,177);      //ORANGE
+  const cv::Scalar                  color_orange_max = cv::Scalar(25,255,255);     //ORANGE
             
-  const cv::Scalar                  color_yellow_min = cv::Scalar(25,150,150);       //YELLOW
+  const cv::Scalar                  color_yellow_min = cv::Scalar(25,100,177);       //YELLOW
   const cv::Scalar                  color_yellow_max = cv::Scalar(35,255,255);     //YELLOW
  
-  const cv::Scalar                  color_green_min = cv::Scalar(35,150,150);      //GREEN
+  const cv::Scalar                  color_green_min = cv::Scalar(35,100,177);      //GREEN
   const cv::Scalar                  color_green_max = cv::Scalar(75,255,255);      //GREEN
   
-  const cv::Scalar                  color_purple_min = cv::Scalar(150,100,75);      //PURPLE
+  const cv::Scalar                  color_purple_min = cv::Scalar(150,100,177);      //PURPLE
   const cv::Scalar                  color_purple_max = cv::Scalar(175,255,255);    //PURPLE
   
   const cv::Scalar                  color_black_min = cv::Scalar(0,0,0);           //BLACK
@@ -129,12 +129,12 @@ void Detector::GrabRGBD() {
   cv::Mat     red_mask        = Detector::ReturnRedMask(image_HSV);
   cv::Mat     blue_mask       = Detector::ReturnBlueMask(image_HSV);
   // cv::Mat     yellow_mask     = ReturnYellowMask(image_HSV);
-  cv::Mat     purple_mask     = Detector::ReturnPurpleMask(image_HSV);
+  cv::Mat     orange_mask     = Detector::ReturnOrangeMask(image_HSV);
   // cv::Mat     orange_mask     = ReturnOrangeMask(image_HSV);
   // 4) finding contours
   std::vector<std::vector<cv::Point>> contours_red = Detector::ReturnContours(red_mask);
   std::vector<std::vector<cv::Point>> contours_blue = Detector::ReturnContours(blue_mask);
-  std::vector<std::vector<cv::Point>> contours_purple = Detector::ReturnContours(purple_mask);
+  std::vector<std::vector<cv::Point>> contours_orange = Detector::ReturnContours(orange_mask);
   // std::vector<std::vector<cv::Point>> contours_orange = ReturnContours(orange_mask);
   
   // Image for detections
@@ -185,27 +185,29 @@ void Detector::GrabRGBD() {
       }
     } 
     // Purple mask
-    if (contours_purple.size()>0)
+    if (contours_orange.size()>0)
     {
-      for (size_t n = 0;n<contours_purple.size();n++)
+      for (size_t n = 0;n<contours_orange.size();n++)
       {
-              double newArea = cv::contourArea(contours_purple.at(n));
+              double newArea = cv::contourArea(contours_orange.at(n));
               if(newArea > blob_size)
               {   
                   // Finding blob's center       
-                  cv::Point2f center = Detector::FindCenter(contours_purple, n);
+                  cv::Point2f center = Detector::FindCenter(contours_orange, n);
                   center3D.x = center.x;
                   center3D.y = center.y;
       
                   // Drawing 
                   statePt2D.x = center.x;
                   statePt2D.y = center.y;
-                  cv::circle  (drawing, statePt2D, 5, detection_color_purple, 10);
-                  float radius = Detector::FindRadius(contours_purple, n);
-                  cv::circle  (drawing, statePt2D, int(radius), detection_color_purple, 2 );
+                  cv::circle  (drawing, statePt2D, 5, detection_color_orange, 10);
+                  float radius = Detector::FindRadius(contours_orange, n);
+                  cv::circle  (drawing, statePt2D, int(radius), detection_color_orange, 2 );
               }
       }
     }
+    
+    
 
   /* show the image in gui (!the image will be displayed after calling cv::waitKey()!) */
 
