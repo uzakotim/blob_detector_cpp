@@ -11,6 +11,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#include <Eigen>
 
 #include<iostream>
 #include<algorithm>
@@ -21,6 +22,12 @@
 #include<vector>
 
 /* callbackImage() method //{ */
+typedef Eigen::Matrix<double, 4, 4> Matrix4x4d;
+typedef Eigen::Matrix<double, 4, 2> Matrix4x2d;
+typedef Eigen::Matrix<double, 2, 4> Matrix2x4d;
+typedef Eigen::Matrix<double, 2, 2> Matrix2x2d;
+typedef Eigen::Matrix<double, 4, 1> Vector4d;
+typedef Eigen::Matrix<double, 2, 1> Vector2d;
 class Detector
 {
 private:
@@ -29,14 +36,15 @@ private:
 
 
   // ---------------------Color parameters----------------------------|
-  const cv::Scalar                  color_red_one_min = cv::Scalar(0,175,150);        //RED
-  const cv::Scalar                  color_red_one_max = cv::Scalar(10,255,255);     //RED
+ // ---------------------Color parameters----------------------------|
+  const cv::Scalar                  color_red_one_min = cv::Scalar(0,100,75);        //RED
+  const cv::Scalar                  color_red_one_max = cv::Scalar(5,255,255);     //RED
 
-  const cv::Scalar                  color_red_two_min = cv::Scalar(170,175,150);      //RED
+  const cv::Scalar                  color_red_two_min = cv::Scalar(175,100,75);      //RED
   const cv::Scalar                  color_red_two_max = cv::Scalar(180,255,255);    //RED
     
-  const cv::Scalar                  color_blue_min = cv::Scalar(78,100,150);        //BLUE
-  const cv::Scalar                  color_blue_max = cv::Scalar(140,255,255);       //BLUE
+  const cv::Scalar                  color_blue_min = cv::Scalar(75,100,75);        //BLUE
+  const cv::Scalar                  color_blue_max = cv::Scalar(150,255,255);       //BLUE
   
   const cv::Scalar                  color_orange_min = cv::Scalar(15,150,150);       //ORANGE
   const cv::Scalar                  color_orange_max = cv::Scalar(30,255,255);     //ORANGE
@@ -47,12 +55,13 @@ private:
   const cv::Scalar                  color_green_min = cv::Scalar(35,150,150);      //GREEN
   const cv::Scalar                  color_green_max = cv::Scalar(75,255,255);      //GREEN
   
-  const cv::Scalar                  color_purple_min = cv::Scalar(140,100,150);      //PURPLE
-  const cv::Scalar                  color_purple_max = cv::Scalar(170,255,255);    //PURPLE
+  const cv::Scalar                  color_purple_min = cv::Scalar(150,100,75);      //PURPLE
+  const cv::Scalar                  color_purple_max = cv::Scalar(175,255,255);    //PURPLE
   
   const cv::Scalar                  color_black_min = cv::Scalar(0,0,0);           //BLACK
   const cv::Scalar                  color_black_max = cv::Scalar(180,255,30);      //BLACK
  
+
 
   // in BGR
   const cv::Scalar                  detection_color_blue = cv::Scalar(255,100,0);
@@ -68,9 +77,34 @@ private:
   cv::VideoCapture cap;
   int apiID = cv::CAP_ANY;      // 0 = autodetect default API
   int deviceID = 0;             // 0 = open default camera
+  // | ---------- Kalman Filter --------------------------------- |
+  Vector4d new_x_1;
+  Vector4d new_x_2;
+  Vector4d new_x_3;
+  Matrix4x4d new_cov_1;
+  Matrix4x4d new_cov_2;
+  Matrix4x4d new_cov_3;
+  Matrix4x4d Q;
+  Matrix2x2d R;
+  double w_q {0.1};
+  double w_r {5.0};  
+  ros::Time  time_last_image_one;          // time stamp of the last received image message
   // | --------------------------- gui -------------------------- |
 public:
    Detector(){
+      this->new_x_1 << 0,0,0,0;
+      this->new_x_2 << 0,0,0,0;
+      this->new_x_3 << 0,0,0,0;
+      this->new_cov_1.setIdentity();
+      this->new_cov_2.setIdentity();
+      this->new_cov_3.setIdentity();
+      this->Q << w_q,0,0,0,
+                  0,w_q,0,0,
+                  0,0,w_q,0,
+                  0,0,0,w_q;
+      this->R << w_r,0,
+                  0,w_r;
+      
       if (_gui_) {
 
       int flags = cv::WINDOW_NORMAL | cv::WINDOW_FREERATIO | cv::WINDOW_GUI_EXPANDED;
@@ -89,7 +123,7 @@ public:
       if (!cap.isOpened()) {
             std::cerr << "ERROR! Unable to open camera\n";
       }
-    }
+      }
       void GrabRGBD();
       cv::Mat GaussianBlur(cv::Mat image);
       cv::Mat BGRtoHSV(cv::Mat image);
@@ -103,6 +137,8 @@ public:
       cv::Point2f FindCenter(std::vector<std::vector<cv::Point>> contours, int ID);
       float FindRadius(std::vector<std::vector<cv::Point>> contours, int ID);
       int FindMaxAreaContourId(std::vector<std::vector<cv::Point>> contours);
+      std::tuple<Vector6d, Matrix6x6d> lkfPredict(const Vector4d &x, const Matrix4x4d &x_cov, const double &dt)
+      std::tuple<Vector6d, Matrix6x6d> lkfCorrect(const Vector4d &x, const Matrix4x4d &x_cov, const Vector2d &measurement, const double &dt) {
     
       
 };
@@ -112,8 +148,13 @@ void Detector::GrabRGBD() {
   const std::string color_encoding     = "bgr8";
   const std::string grayscale_encoding = "mono8";
 
+  // time
+
+  ros::Time time_begin = ros::Time::now();
+  ros::Duration duration = time_begin-time_last_image;
+  double dt = duration.toSec();
  
-  
+  std::cout<<dt<<std::endl;
   // wait for a new frame from camera and store it into 'frame'
   cap.read(frame);
   cv::Mat  cv_image = frame;
@@ -149,10 +190,16 @@ void Detector::GrabRGBD() {
                   cv::Point2f center = Detector::FindCenter(contours_red, i);
                   center3D.x = center.x;
                   center3D.y = center.y;
-      
+                  //KF
+                  Vector2d measurement;
+                  measurement << center3D.x,center3D.y;
+                  
+                  std::tie(new_x_1,new_cov_1) = SensFuse::lkfPredict(new_x_1,new_cov_1,dt);
+                  std::tie(new_x_1,new_cov_1) = SensFuse::lkfCorrect(new_x_1,new_cov_1,measurement,dt);
+
                   // Drawing 
-                  statePt2D.x = center.x;
-                  statePt2D.y = center.y;
+                  statePt2D.x = new_x_1(0);
+                  statePt2D.y = new_x_1(1);
                   cv::circle  (drawing, statePt2D, 5, detection_color_red, 10);
                   float radius = Detector::FindRadius(contours_red, i);
                   cv::circle  (drawing, statePt2D, int(radius), detection_color_red, 2 );
@@ -337,15 +384,52 @@ int Detector::FindMaxAreaContourId(std::vector<std::vector<cv::Point>> contours)
       return maxAreaContourId;
 }
 
+std::tuple<Vector6d, Matrix6x6d> Detector::lkfPredict(const Vector4d &x, const Matrix4x4d &x_cov, const double &dt) {
+
+  // x[k+1] = A*x[k] + B*u[k]
+  Matrix4x4d A; 
+  A <<1,0,dt,0,
+      0,1,0,dt,
+      0,0,1,0,
+      0,0,0,1;
+
+  Vector4d   new_x;      // the updated state vector, x[k+1]
+  Matrix4x4d new_x_cov;  // the updated covariance matrix
+
+  // PUT YOUR CODE HERE
+  new_x = A*x;
+  new_x_cov = A*x_cov*A.transpose()+Q;
+  return {new_x, new_x_cov};
+}
+std::tuple<Vector6d, Matrix6x6d> Detector::lkfCorrect(const Vector4d &x, const Matrix4x4d &x_cov, const Vector2d &measurement, const double &dt) {
+
+  Vector4d   new_x;      // the updated state vector, x[k+1]
+  Matrix4x4d new_x_cov;  // the updated covariance matrix
+
+  Matrix2x4d H;
+  H << 1,0,0,0,
+       0,1,0,0;
+  // Kalman Gain
+  Matrix4x2d K = x_cov*H.transpose()*((H*x_cov*H.transpose()+R).inverse()); 
+  // update
+  new_x = x+K*(measurement-H*x);
+
+  Matrix4x4d Id4x4;
+  Id4x4.setIdentity();
+
+  new_x_cov = (Id4x4 - K*H)*x_cov;
+  return {new_x, new_x_cov};
+}
+
 /*  BlobDet //{ */
 
 int main()
 {
- 
-
+  std::cout<<"started"<<std::endl;
   Detector bd;
   while(true)
   {
+      std::cout.flush();
       bd.GrabRGBD();
   }
 }
