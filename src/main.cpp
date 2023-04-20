@@ -36,9 +36,8 @@ private:
 
 
   // ---------------------Color parameters----------------------------|
- // ---------------------Color parameters----------------------------|
-  const cv::Scalar                  color_red_one_min = cv::Scalar(0,100,75);        //RED
-  const cv::Scalar                  color_red_one_max = cv::Scalar(5,255,255);     //RED
+  const cv::Scalar                  color_red_one_min = cv::Scalar(0,175,150);        //RED
+  const cv::Scalar                  color_red_one_max = cv::Scalar(10,255,255);     //RED
 
   const cv::Scalar                  color_red_two_min = cv::Scalar(175,100,75);      //RED
   const cv::Scalar                  color_red_two_max = cv::Scalar(180,255,255);    //RED
@@ -69,8 +68,10 @@ private:
   const cv::Scalar                  detection_color_yellow = cv::Scalar(0,255,255);
   const cv::Scalar                  detection_color_orange = cv::Scalar(13,143,255);
   const cv::Scalar                  detection_color_purple = cv::Scalar(255,0,255);
+  
+  int blob_size = 200;   
+  
   // | --------- Blob Parameters -------------------------------- |
-  int blob_size = 100; 
   cv::Point2d statePt2D;
   cv::Point3d center3D;
   cv::Mat frame;
@@ -163,7 +164,7 @@ void Detector::GrabRGBD() {
   // 1) smoothing
   cv::Mat     blurred_image   = Detector::GaussianBlur(cv_image);
   // 2) conversion to hsv
-  cv::Mat     image_HSV       = Detector::BGRtoHSV(cv_image);
+  cv::Mat     image_HSV       = Detector::BGRtoHSV(blurred_image);
   // 3) finding mask
   cv::Mat     red_mask        = Detector::ReturnRedMask(image_HSV);
   cv::Mat     blue_mask       = Detector::ReturnBlueMask(image_HSV);
@@ -307,7 +308,6 @@ cv::Mat Detector::ReturnRedMask(cv::Mat image)
       cv::inRange     (image, color_red_one_min, color_red_one_max, mask1);
       cv::inRange     (image, color_red_two_min, color_red_two_max, mask2);
       total = mask1 | mask2;
-      
       return total;
 }
 cv::Mat Detector::ReturnBlueMask(cv::Mat image)
